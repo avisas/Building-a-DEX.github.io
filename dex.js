@@ -108,11 +108,26 @@ async function formSubmitted(event){
             <p>${fromAmount} ${quote.fromToken.symbol} = ${toAmount} ${quote.toToken.symbol}</p>
             <p>Gas fee: ${quote.estimatedGas}</p>
         `;
+        document.querySelector('.js-approve').removeAttribute('disabled');
     } catch(e){
         document.querySelector('.js-quote-container').innerHTML = `
             <p class="error">The conversion didn't succeed.</p>
         `;
     }
+}
+
+document.querySelector('.js-approve').addEventListener('click', swap);
+
+async function swap() {
+    const receipt = await Moralis.Plugins.oneInch.swap({
+      chain: 'polygon', // The blockchain you want to use (eth/bsc/polygon)
+      fromTokenAddress: fromTokenAddress, // The token you want to swap
+      toTokenAddress: toTokenAddress, // The token you want to receive
+      amount: oralis.Units.Token(fromAmount, fromDecimals).toString(),
+      fromAddress: Moralis.User.current().get('ethAddress'), // Your wallet address
+      slippage: 1,
+    });
+    console.log(receipt);
 }
 
 async function formCanceled(event){

@@ -10,3 +10,7 @@ body{
 .btn-sm{
     margin: 8px;
 }
+
+.btn-md{
+    margin-left: 7px;
+}
