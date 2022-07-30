@@ -15,13 +15,13 @@ const $selectedToken = document.querySelector('.js-from-token');
 async function login() {
     let user = Moralis.User.current();
     if (!user) {
-      user = await Moralis.authenticate();
+        user = await Moralis.authenticate();
     }
     console.log("logged in user:", user);
     getStats();
 }
 
-async function initSwapForm(event){
+async function initSwapForm(event) {
     event.preventDefault();
     $selectedToken.innerText = event.target.dataset.symbol;
     $selectedToken.dataset.address = event.target.dataset.address;
@@ -35,12 +35,12 @@ async function initSwapForm(event){
 }
 
 
-async function getStats(){
+async function getStats() {
     //Retrieve all token balances of a current user or specified address. 
     //Returns an object with the number of tokens and the array of token objects (asynchronous).
-    const balances = await Moralis.Web3API.account.getTokenBalances({chain: 'polygon'});
+    const balances = await Moralis.Web3API.account.getTokenBalances({ chain: 'polygon' });
     console.log(balances);
-    $tokenBalanceTbody.innerHTML = balances.map( (token, index) => `
+    $tokenBalanceTbody.innerHTML = balances.map((token, index) => `
         <tr>
             <td>${index + 1}</td>
             <td>${token.symbol}</td>
@@ -58,12 +58,12 @@ async function getStats(){
         </tr>
     `).join('');
 
-    for(let $btn of $tokenBalanceTbody.querySelectorAll('.js-swap')){
+    for (let $btn of $tokenBalanceTbody.querySelectorAll('.js-swap')) {
         $btn.addEventListener('click', initSwapForm);
     }
 }
 
-async function buyCrypto(){
+async function buyCrypto() {
     Moralis.Plugins.fiat.buy();
 }
 
@@ -77,11 +77,11 @@ document.getElementById("btn-buy-crypto").addEventListener('click', buyCrypto);
 document.getElementById("btn-logout").addEventListener('click', logOut);
 
 // Quote / swap
-async function formSubmitted(event){
+async function formSubmitted(event) {
     event.preventDefault();
-    const fromAmount = Number.parseFloat( $amountInput.value ); // compare these two values.
-    const fromMaxValue = number.parseFloat( $selectedToken.dataset.max ); // compare 
-    if(Number.isNaN(fromAmount) || fromAmount > fromMaxValue) {
+    const fromAmount = Number.parseFloat($amountInput.value); // compare these two values.
+    const fromMaxValue = number.parseFloat($selectedToken.dataset.max); // compare 
+    if (Number.isNaN(fromAmount) || fromAmount > fromMaxValue) {
         // invalid message
         document.querySelector('.js-amount-error error').innerText = 'Invalid amount';
         return;
@@ -95,7 +95,7 @@ async function formSubmitted(event){
 
     const [toTokenAddress, toDecimals] = document.querySelector('[name=to-token]').value.split('-');
 
-    try{
+    try {
         const quote = await Moralis.Plugins.oneInch.quote({
             chain: 'polygon', // The blockchain you want to use (eth/bsc/polygon)
             fromTokenAddress: fromTokenAddress,  // The token you want to swap
@@ -109,7 +109,7 @@ async function formSubmitted(event){
             <p>Gas fee: ${quote.estimatedGas}</p>
         `;
         document.querySelector('.js-approve').removeAttribute('disabled');
-    } catch(e){
+    } catch (e) {
         document.querySelector('.js-quote-container').innerHTML = `
             <p class="error">The conversion didn't succeed.</p>
         `;
@@ -120,17 +120,17 @@ document.querySelector('.js-approve').addEventListener('click', swap);
 
 async function swap() {
     const receipt = await Moralis.Plugins.oneInch.swap({
-      chain: 'polygon', // The blockchain you want to use (eth/bsc/polygon)
-      fromTokenAddress: fromTokenAddress, // The token you want to swap
-      toTokenAddress: toTokenAddress, // The token you want to receive
-      amount: oralis.Units.Token(fromAmount, fromDecimals).toString(),
-      fromAddress: Moralis.User.current().get('ethAddress'), // Your wallet address
-      slippage: 1,
+        chain: 'polygon', // The blockchain you want to use (eth/bsc/polygon)
+        fromTokenAddress: fromTokenAddress, // The token you want to swap
+        toTokenAddress: toTokenAddress, // The token you want to receive
+        amount: oralis.Units.Token(fromAmount, fromDecimals).toString(),
+        fromAddress: Moralis.User.current().get('ethAddress'), // Your wallet address
+        slippage: 1,
     });
     console.log(receipt);
 }
 
-async function formCanceled(event){
+async function formCanceled(event) {
     event.preventDefault();
     document.querySelector('.js-submit').setAttribute('disabled', '');
     document.querySelector('.js-cancel').setAttribute('disabled', '');
@@ -138,7 +138,7 @@ async function formCanceled(event){
     $amountInput.setAttribute('disabled', '');
     delete $selectedToken.dataset.address;
     delete $selectedToken.dataset.decimals;
-    delete $selectedToken.dataset.max;                                                                                                                                                         
+    delete $selectedToken.dataset.max;
     document.querySelector('.js-quote-container').innerHTML = '';
 }
 
@@ -146,22 +146,22 @@ document.querySelector('.js-submit').addEventListener('click', formSubmitted);
 document.querySelector('.js-cancel').addEventListener('click', formCanceled);
 
 // To token dropdown preparation
-async function getTop10Coins () {
-    try{
+async function getTop10Coins() {
+    try {
         let coinPaprika = await fetch('https://api.coinpaprika.com/v1/coins');
         let tokens = await coinPaprika.json();
         return tokens
-        .filter(token => token.rank >= 1 && token.rank <= 30)
-        .map(token => token.symbol);
-    }catch(e){
+            .filter(token => token.rank >= 1 && token.rank <= 30)
+            .map(token => token.symbol);
+    } catch (e) {
         console.log(`Error: ${e}`);
     }
-        
+
 }
 
-async function getTickerData(tickerList){
+async function getTickerData(tickerList) {
     const tokens = await Moralis.Plugins.oneInch.getSupportedTokens({
-        chain: 'polygon', 
+        chain: 'polygon',
     });
     const tokenList = Object.values(tokens.tokens);
     //console.log(tokenList);
@@ -169,16 +169,16 @@ async function getTickerData(tickerList){
     return tokenList.filter(token => tickerList.includes(token.symbol));  // filter token list
 }
 
-function renderTokenDropDown(tokens){
-    const options = tokens.map(token => 
+function renderTokenDropDown(tokens) {
+    const options = tokens.map(token =>
         `
         <option value='${token.address}-${token.decimals}'>
             ${token.name}
         </option>
         `).join('');
-        document.querySelector('[name=to-token]').innerHTML = options;
+    document.querySelector('[name=to-token]').innerHTML = options;
 }
 
 getTop10Coins()
-.then(tickerList => getTickerData(tickerList))
-.then(renderTokenDropDown);
+    .then(tickerList => getTickerData(tickerList))
+    .then(renderTokenDropDown);
